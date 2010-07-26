@@ -1,5 +1,8 @@
 SET( CONFOREG_EXE_SRC
   register
+# register3D
+  plot
+# plot3D
   )
 
 
@@ -7,7 +10,6 @@ FOREACH( var ${CONFOREG_EXE_SRC} )
   ADD_EXECUTABLE( ${var} ${var} )
   TARGET_LINK_LIBRARIES( ${var}
   ITKIO
-  ITKQuadEdgeMesh
   ITKCommon
   ITKBasicFilters
   ITKAlgorithms
