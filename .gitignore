@@ -1,2 +1,6 @@
+CMakeLists.txt.user
 qtcreator-build
-.DS*
+*.DS*
+*~
+
+data/
