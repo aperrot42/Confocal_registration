@@ -78,8 +78,7 @@ public:
       metricImageType::IndexType index;
       index[0] = optimizer->GetCurrentIndex()[0];
       index[1] = optimizer->GetCurrentIndex()[1];
-      index[2] = optimizer->GetCurrentIndex()[2];
-
+      std::cout << index << "  ";
       std::cout << optimizer->GetCurrentValue() << std::endl;
       image->SetPixel( index, optimizer->GetCurrentValue() );
     }
@@ -222,8 +221,8 @@ typedef itk::ExhaustiveOptimizer OptimizerType;
   //  Each optimizer has particular parameters that must be interpreted in the
   //  context of the optimization strategy it implements.
   OptimizerType::StepsType steps( transform->GetNumberOfParameters() );
-  steps[0] = 10;
-  steps[1] = 10;
+  steps[0] = 50;
+  steps[1] = 50;
   optimizer->SetNumberOfSteps( steps );
   optimizer->SetStepLength( 1 );
 
@@ -232,8 +231,8 @@ typedef itk::ExhaustiveOptimizer OptimizerType;
   metricImageType::Pointer metricImage = metricImageType::New();
 
   metricImageType::SizeType size;
-  size[0] = steps[0]+1;
-  size[1] = steps[1]+1;
+  size[0] = 2*steps[0]+1;
+  size[1] = 2*steps[1]+1;
 
   metricImageType::IndexType start;
   start[0] = 0;
@@ -288,8 +287,6 @@ typedef itk::ExhaustiveOptimizer OptimizerType;
   //  method returns this value. A large number of iterations may be an
   //  indication that the maximum step length has been set too small, which
   //  is undesirable since it results in long computational times.
-//  const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
-
 
   //  The value of the image metric corresponding to the last set of parameters
   //  can be obtained with the \code{GetValue()} method of the optimizer.
