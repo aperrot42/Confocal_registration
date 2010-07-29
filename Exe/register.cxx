@@ -35,9 +35,6 @@
 #include "itkSubtractImageFilter.h"
 
 
-#include "itkExhaustiveOptimizer.h"
-
-
 class CommandIterationUpdate : public itk::Command
 {
 public:
@@ -51,8 +48,7 @@ protected:
 
 public:
 
- // typedef itk::RegularStepGradientDescentOptimizer     OptimizerType;
-  typedef itk::ExhaustiveOptimizer  OptimizerType;
+  typedef itk::RegularStepGradientDescentOptimizer     OptimizerType;
   typedef const OptimizerType                         *OptimizerPointer;
 
   void Execute(itk::Object *caller, const itk::EventObject & event)
@@ -70,9 +66,8 @@ public:
       return;
       }
 
-   // std::cout << optimizer->GetCurrentIteration() << " = ";
-    std::cout << optimizer->GetCurrentValue() << " : ";
-   // std::cout << optimizer->GetCurrentPosition() << std::endl;
+    std::cout << optimizer->GetCurrentIteration() << " = ";
+    std::cout << optimizer->GetCurrentPosition() << std::endl;
   }
 
 };
@@ -85,8 +80,12 @@ int main( int argc, char *argv[] )
     std::cerr << "Missing Parameters " << std::endl;
     std::cerr << "Usage: " << argv[0];
     std::cerr << " fixedImageFile  movingImageFile ";
+    std::cerr << " xMaxTranslation yMaxTranslation zMaxTranslation ";
+    std::cerr << " xTilePos yTilePos zTilePos ";
+    /*
     std::cerr << "outputImagefile [differenceImageAfter]";
     std::cerr << "[differenceImageBefore]" << std::endl;
+    */
     return EXIT_FAILURE;
     }
 
@@ -110,8 +109,7 @@ int main( int argc, char *argv[] )
 
   //  An optimizer is required to explore the parameter space of the transform
   //  in search of optimal values of the metric.
-// typedef itk::RegularStepGradientDescentOptimizer       OptimizerType;
-typedef itk::ExhaustiveOptimizer OptimizerType;
+ typedef itk::RegularStepGradientDescentOptimizer       OptimizerType;
 
   //  The metric will compare how well the two images match each other. Metric
   //  types are usually parameterized by the image types as it can be seen in
@@ -177,9 +175,6 @@ typedef itk::ExhaustiveOptimizer OptimizerType;
   //  region is identified by the BufferedRegion of the fixed image.
   //  Note that for this region to be valid the reader must first invoke its
   //  Update() method.
-  //
-  //  itk::ImageRegistrationMethod!SetFixedImageRegion()
-  //  itk::Image!GetBufferedRegion()
   fixedImageReader->Update();
   registration->SetFixedImageRegion(
                     fixedImageReader->GetOutput()->GetBufferedRegion() );
@@ -194,9 +189,6 @@ typedef itk::ExhaustiveOptimizer OptimizerType;
   //  initializes the transform to an Identity transform. Note that the
   //  array constructor requires the number of elements to be passed as an
   //  argument.
-  //
-  //  \index{itk::TranslationTransform!GetNumberOfParameters()}
-  //  \index{itk::RegistrationMethod!SetInitialTransformParameters()}
   typedef RegistrationType::ParametersType ParametersType;
   ParametersType initialParameters( transform->GetNumberOfParameters() );
 
@@ -232,21 +224,15 @@ typedef itk::ExhaustiveOptimizer OptimizerType;
   //  SetMaximumStepLength(), while the tolerance for convergence is
   //  defined with the method SetMinimumStepLength().
   //
-
-//  optimizer->SetMaximumStepLength( 20.00 );
-//  optimizer->SetMinimumStepLength( 0.01 );
-OptimizerType::StepsType steps( transform->GetNumberOfParameters() );
-steps[0] = 50;
-steps[1] = 50;
-optimizer->SetNumberOfSteps( steps );
-optimizer->SetStepLength( 1 );
+  optimizer->SetMaximumStepLength( 20.00 );
+  optimizer->SetMinimumStepLength( 0.01 );
 
 
   //  In case the optimizer never succeeds reaching the desired
   //  precision tolerance, it is prudent to establish a limit on the number of
   //  iterations to be performed. This maximum number is defined with the
   //  method SetNumberOfIterations().
-//  optimizer->SetNumberOfIterations( 200 );
+  optimizer->SetNumberOfIterations( 200 );
 
   // Connect an observer
   CommandIterationUpdate::Pointer observer = CommandIterationUpdate::New();
@@ -274,8 +260,6 @@ optimizer->SetStepLength( 1 );
   //  The result of the registration process is an array of parameters that
   //  defines the spatial transformation in an unique way. This final result is
   //  obtained using the \code{GetLastTransformParameters()} method.
-  //
-  //  \index{itk::RegistrationMethod!GetLastTransformParameters()}
   ParametersType finalParameters = registration->GetLastTransformParameters();
 
   //
@@ -291,12 +275,12 @@ optimizer->SetStepLength( 1 );
   //  method returns this value. A large number of iterations may be an
   //  indication that the maximum step length has been set too small, which
   //  is undesirable since it results in long computational times.
-//  const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
+  const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
 
 
   //  The value of the image metric corresponding to the last set of parameters
   //  can be obtained with the \code{GetValue()} method of the optimizer.
-  const double bestValue = optimizer->GetCurrentValue();
+  const double bestValue = optimizer->GetValue();
 
 
   // Print out results
@@ -304,41 +288,8 @@ optimizer->SetStepLength( 1 );
   std::cout << "Result = " << std::endl;
   std::cout << " Translation X = " << TranslationAlongX  << std::endl;
   std::cout << " Translation Y = " << TranslationAlongY  << std::endl;
-  //std::cout << " Iterations    = " << numberOfIterations << std::endl;
+  std::cout << " Iterations    = " << numberOfIterations << std::endl;
   std::cout << " Metric value  = " << bestValue          << std::endl;
-
-
-
-  //  Let's execute this example over two of the images provided in
-  //  \code{Examples/Data}:
-  //
-  //  \begin{itemize}
-  //  \item \code{BrainProtonDensitySliceBorder20.png}
-  //  \item \code{BrainProtonDensitySliceShifted13x17y.png}
-  //  \end{itemize}
-  //
-  //  The second image is the result of intentionally translating the first
-  //  image by $(13,17)$ millimeters. Both images have unit-spacing and
-  //  are shown in Figure \ref{fig:FixedMovingImageRegistration1}. The
-  //  registration takes 18 iterations and the resulting transform parameters are:
-  //
-  //  \begin{verbatim}
-  //  Translation X = 12.9959
-  //  Translation Y = 17.0001
-  //  \end{verbatim}
-  //
-  //  As expected, these values match quite well the misalignment that we
-  //  intentionally introduced in the moving image.
-  //
-  // \begin{figure}
-  // \center
-  // \includegraphics[width=0.44\textwidth]{BrainProtonDensitySliceBorder20.eps}
-  // \includegraphics[width=0.44\textwidth]{BrainProtonDensitySliceShifted13x17y.eps}
-  // \itkcaption[Fixed and Moving images in registration framework]{Fixed and
-  // Moving image provided as input to the registration method.}
-  // \label{fig:FixedMovingImageRegistration1}
-  // \end{figure}
-  //
 
 
 
@@ -372,15 +323,7 @@ optimizer->SetStepLength( 1 );
   //  here because the registration method acts as a filter whose output is a
   //  transform decorated in the form of a \doxygen{DataObject}. For details in
   //  this construction you may want to read the documentation of the
-  //  \doxygen{DataObjectDecorator}.
-  //
-  //  \index{itk::ImageRegistrationMethod!Resampling image}
-  //  \index{itk::ImageRegistrationMethod!Pipeline}
-  //  \index{itk::ImageRegistrationMethod!DataObjectDecorator}
-  //  \index{itk::ImageRegistrationMethod!GetOutput()}
-  //  \index{itk::DataObjectDecorator!Use in Registration}
-  //  \index{itk::DataObjectDecorator!Get()}
-
+  //  DataObjectDecorator.
 
   resampler->SetTransform( registration->GetOutput()->Get() );
 
@@ -399,16 +342,6 @@ optimizer->SetStepLength( 1 );
   resampler->SetOutputDirection( fixedImage->GetDirection() );
   resampler->SetDefaultPixelValue( 100 );
 
-  //
-  // \begin{figure}
-  // \center
-  // \includegraphics[width=0.32\textwidth]{ImageRegistration1Output.eps}
-  // \includegraphics[width=0.32\textwidth]{ImageRegistration1DifferenceBefore.eps}
-  // \includegraphics[width=0.32\textwidth]{ImageRegistration1DifferenceAfter.eps}
-  // \itkcaption[HelloWorld registration output images]{Mapped moving image and its
-  // difference with the fixed image before and after registration}
-  // \label{fig:ImageRegistration1Output}
-  // \end{figure}
 
 
 
@@ -438,8 +371,6 @@ optimizer->SetStepLength( 1 );
   writer->SetFileName( argv[3] );
 
 
-  //  Software Guide : BeginLatex
-  //
   //  The filters are connected together and the \code{Update()} method of the
   //  writer is invoked in order to trigger the execution of the pipeline.
 
@@ -447,17 +378,6 @@ optimizer->SetStepLength( 1 );
   caster->SetInput( resampler->GetOutput() );
   writer->SetInput( caster->GetOutput()   );
   writer->Update();
-
-  //
-  // \begin{figure}
-  // \center
-  // \includegraphics[width=\textwidth]{ImageRegistration1Pipeline.eps}
-  // \itkcaption[Pipeline structure of the registration example]{Pipeline
-  // structure of the registration example.}
-  // \label{fig:ImageRegistration1Pipeline}
-  // \end{figure}
-  //
-
 
 
 

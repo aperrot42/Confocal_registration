@@ -289,7 +289,7 @@ typedef itk::ExhaustiveOptimizer OptimizerType;
   //  is undesirable since it results in long computational times.
 
   //  The value of the image metric corresponding to the last set of parameters
-  //  can be obtained with the \code{GetValue()} method of the optimizer.
+  //  can be obtained with the GetValue() method of the optimizer.
   const double bestValue = optimizer->GetCurrentValue();
 
 

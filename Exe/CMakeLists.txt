@@ -3,6 +3,7 @@ SET( CONFOREG_EXE_SRC
 # register3D
   plot
 # plot3D
+  getpart
   )
 
 
