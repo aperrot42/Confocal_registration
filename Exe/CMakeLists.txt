@@ -6,10 +6,6 @@ SET( CONFOREG_EXE_ITK_SRC
   getpart
   )
 
-SET( CONFOREG_EXE_OTB_SRC
-  OTBTest
-  )
-
 FOREACH( var ${CONFOREG_EXE_ITK_SRC} )
   ADD_EXECUTABLE( ${var} ${var} )
   TARGET_LINK_LIBRARIES( ${var}
@@ -21,12 +17,3 @@ FOREACH( var ${CONFOREG_EXE_ITK_SRC} )
   ITKNumerics
   )
 ENDFOREACH( var ${CONFOREG_EXE_ITK_SRC} )
-
-FOREACH( var ${CONFOREG_EXE_OTB_SRC} )
-  ADD_EXECUTABLE( ${var} ${var} )
-  TARGET_LINK_LIBRARIES( ${var}
-  OTBCommon 
-  OTBIO
-  OTBMultiScale
-  )
-ENDFOREACH( var ${CONFOREG_EXE_OTB_SRC} )
