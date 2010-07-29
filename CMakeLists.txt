@@ -39,16 +39,16 @@ SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY
 )
 
 # all target static libraries will be in ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-  ${CONFOREG_BINARY_DIR}/lib
-)
+#SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+#  ${CONFOREG_BINARY_DIR}/lib
+#)
 
 # all shared libraries will be in ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 # Note that modules (plugins) are considered as shared libraries
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY
+#SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY
 #  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins
-   ${CONFOREG_BINARY_DIR}/lib
-)
+#   ${CONFOREG_BINARY_DIR}/lib
+#)
 
 LINK_DIRECTORIES(
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
@@ -73,8 +73,19 @@ LINK_DIRECTORIES(
 FIND_PACKAGE( ITK )
 IF( ITK_FOUND )
   INCLUDE( ${ITK_USE_FILE} )
+ELSE( ITK_FOUND )
+  MESSAGE( FATAL_ERROR "Cannot build ITK project without ITK. Please set ITK_DIR.")
 ENDIF( ITK_FOUND )
 
+#--------------------------------------------------------------------------
+# OTB
+#--------------------------------------------------------------------------
+FIND_PACKAGE(OTB)
+IF( OTB_FOUND )
+  INCLUDE( ${OTB_USE_FILE} )
+ELSE( OTB_FOUND )
+  MESSAGE( FATAL_ERROR "Cannot build OTB project without OTB. Please set OTB_DIR.")
+ENDIF(OTB_FOUND)
 
 #-------------------------------------------------------------------------
 # PROJECT STRUCTURE
