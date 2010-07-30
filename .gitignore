@@ -2,5 +2,7 @@ CMakeLists.txt.user
 qtcreator-build
 *.DS*
 *~
+CMakeLists.txt.user*
+
 
 data/

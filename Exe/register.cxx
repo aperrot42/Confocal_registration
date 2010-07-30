@@ -34,6 +34,8 @@
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkSubtractImageFilter.h"
 
+#include "itkMeanImageFilter.h"
+#include "itkShrinkImageFilter.h"
 
 class CommandIterationUpdate : public itk::Command
 {
@@ -67,7 +69,9 @@ public:
       }
 
     std::cout << optimizer->GetCurrentIteration() << " = ";
+    std::cout << optimizer->GetValue() ;
     std::cout << optimizer->GetCurrentPosition() << std::endl;
+
   }
 
 };
@@ -80,12 +84,12 @@ int main( int argc, char *argv[] )
     std::cerr << "Missing Parameters " << std::endl;
     std::cerr << "Usage: " << argv[0];
     std::cerr << " fixedImageFile  movingImageFile ";
-    std::cerr << " xMaxTranslation yMaxTranslation zMaxTranslation ";
-    std::cerr << " xTilePos yTilePos zTilePos ";
-    /*
+
     std::cerr << "outputImagefile [differenceImageAfter]";
     std::cerr << "[differenceImageBefore]" << std::endl;
-    */
+
+    //std::cerr << " xMaxTranslation yMaxTranslation zMaxTranslation ";
+
     return EXIT_FAILURE;
     }
 
@@ -157,12 +161,57 @@ int main( int argc, char *argv[] )
   fixedImageReader->SetFileName(  argv[1] );
   movingImageReader->SetFileName( argv[2] );
 
+  //we blur the inputs to take care of general shape
+
+  typedef itk::MeanImageFilter<
+      FixedImageType, FixedImageType>  FixedFilterType;
+
+  typedef itk::MeanImageFilter<
+      MovingImageType, MovingImageType>  MovingFilterType;
+
+  FixedFilterType::Pointer  fixedFilter  = FixedFilterType::New();
+  MovingFilterType::Pointer movingFilter = MovingFilterType::New();
+
+  FixedImageType::SizeType indexFRadius;
+
+  indexFRadius[0] = 15; // radius along x
+  indexFRadius[1] = 15; // radius along y
+
+  fixedFilter->SetRadius(indexFRadius);
+
+  MovingImageType::SizeType indexMRadius;
+
+  indexMRadius[0] = 15; // radius along x
+  indexMRadius[1] = 15; // radius along y
+
+  movingFilter->SetRadius(indexMRadius);
+
+  fixedFilter->SetInput(fixedImageReader->GetOutput());
+  movingFilter->SetInput(movingImageReader->GetOutput());
+
+
+  typedef itk::ShrinkImageFilter<  FixedImageType, FixedImageType >
+    FixedShrinkType;
+  typedef itk::ShrinkImageFilter<  MovingImageType, MovingImageType >
+    MovingShrinkType;
+  FixedShrinkType::Pointer  fixedShrink  = FixedShrinkType::New();
+  MovingShrinkType::Pointer movingShrink = MovingShrinkType::New();
+
+  fixedShrink->SetInput( fixedFilter->GetOutput() );
+  movingShrink->SetInput( movingFilter->GetOutput() );
+
+
+  fixedShrink->SetShrinkFactors(static_cast<unsigned int>(3));
+  movingShrink->SetShrinkFactors(static_cast<unsigned int>(3));
+
+
+
 
   //  In this example, the fixed and moving images are read from files. This
   //  requires the ImageRegistrationMethod to acquire its inputs from
   //  the output of the readers.
-  registration->SetFixedImage(    fixedImageReader->GetOutput()    );
-  registration->SetMovingImage(   movingImageReader->GetOutput()   );
+  registration->SetFixedImage(    fixedShrink->GetOutput()    );
+  registration->SetMovingImage(   movingShrink->GetOutput()   );
 
 
 
@@ -176,8 +225,9 @@ int main( int argc, char *argv[] )
   //  Note that for this region to be valid the reader must first invoke its
   //  Update() method.
   fixedImageReader->Update();
+  fixedShrink->Update();
   registration->SetFixedImageRegion(
-                    fixedImageReader->GetOutput()->GetBufferedRegion() );
+                    fixedShrink->GetOutput()->GetBufferedRegion() );
 
 
   //  The parameters of the transform are initialized by passing them in an
@@ -224,7 +274,7 @@ int main( int argc, char *argv[] )
   //  SetMaximumStepLength(), while the tolerance for convergence is
   //  defined with the method SetMinimumStepLength().
   //
-  optimizer->SetMaximumStepLength( 20.00 );
+  optimizer->SetMaximumStepLength( 5);
   optimizer->SetMinimumStepLength( 0.01 );
 
 
@@ -373,8 +423,6 @@ int main( int argc, char *argv[] )
 
   //  The filters are connected together and the \code{Update()} method of the
   //  writer is invoked in order to trigger the execution of the pipeline.
-
-
   caster->SetInput( resampler->GetOutput() );
   writer->SetInput( caster->GetOutput()   );
   writer->Update();
