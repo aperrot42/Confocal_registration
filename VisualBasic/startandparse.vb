@@ -65,4 +65,50 @@ Public Class Form1
 
 
 
+
+
+
+
+
+
+
+    Public Sub parseOutput(ByRef stringToParse, ByRef xTranslation, ByRef yTranslation)
+
+        Dim XshiftIndexStart, XshiftIndexEnd, YshiftIndexStart, YshiftIndexEnd As Integer
+        Dim stringXShift, stringYShift As String
+
+        'Let's try to parse the line containing X and Y shifts from registration program
+        Try
+
+            ' Find index position of the marker for Yposition and Xposition
+            XshiftIndexStart = stringToParse.IndexOf("Xshift = ") + 9
+            XshiftIndexEnd = stringToParse.IndexOf(";", XshiftIndexStart)
+
+            YshiftIndexStart = stringToParse.IndexOf("Yshift = ") + 9
+            YshiftIndexEnd = stringToParse.IndexOf(";", YshiftIndexStart)
+
+            'We extract the part of the string between the "Xshift = " and ";"
+            stringXShift = stringToParse.Substring(XshiftIndexStart, XshiftIndexEnd - (XshiftIndexStart + 1))
+            stringYShift = stringToParse.Substring(YshiftIndexStart, YshiftIndexEnd - (YshiftIndexStart + 1))
+            Me.xlabel.Text = stringYShift
+            'conversion of substrings to double
+            xTranslation = Val(stringXShift)
+            yTranslation = Val(stringYShift)
+
+
+        Catch OverflowException As Exception
+            Console.WriteLine("Error trying to read output of registration program." + ControlChars.Lf + ControlChars.Lf)
+        End Try
+
+
+    End Sub
+
+
+
+    Private Sub Button2_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button2.Click
+        labelToParse.Text = TrialOutputToParse
+        parseOutput((TrialOutputToParse), xtr, ytr)
+        Me.NumericUpDown1.Value = xtr
+        Me.NumericUpDown2.Value = ytr
+    End Sub
 End Class
