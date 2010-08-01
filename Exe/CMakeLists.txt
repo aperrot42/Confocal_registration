@@ -1,4 +1,5 @@
 SET( CONFOREG_EXE_ITK_SRC
+  reg
   register
 # register3D
   plot

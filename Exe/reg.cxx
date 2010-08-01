@@ -224,7 +224,6 @@ int main( int argc, char *argv[] )
   //  region is identified by the BufferedRegion of the fixed image.
   //  Note that for this region to be valid the reader must first invoke its
   //  Update() method.
-  fixedImageReader->Update();
   fixedShrink->Update();
   registration->SetFixedImageRegion(
                     fixedShrink->GetOutput()->GetBufferedRegion() );
@@ -305,11 +304,11 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
     }
 
-  //
+
   //
   //  The result of the registration process is an array of parameters that
   //  defines the spatial transformation in an unique way. This final result is
-  //  obtained using the \code{GetLastTransformParameters()} method.
+  //  obtained using the GetLastTransformParameters() method.
   ParametersType finalParameters = registration->GetLastTransformParameters();
 
   //
@@ -321,7 +320,7 @@ int main( int argc, char *argv[] )
 
   //
   //  The optimizer can be queried for the actual number of iterations
-  //  performed to reach convergence.  The \code{GetCurrentIteration()}
+  //  performed to reach convergence.  The GetCurrentIteration()
   //  method returns this value. A large number of iterations may be an
   //  indication that the maximum step length has been set too small, which
   //  is undesirable since it results in long computational times.
@@ -329,7 +328,7 @@ int main( int argc, char *argv[] )
 
 
   //  The value of the image metric corresponding to the last set of parameters
-  //  can be obtained with the \code{GetValue()} method of the optimizer.
+  //  can be obtained with the GetValue() method of the optimizer.
   const double bestValue = optimizer->GetValue();
 
 
@@ -346,8 +345,8 @@ int main( int argc, char *argv[] )
 
   //  It is common, as the last step of a registration task, to use the
   //  resulting transform to map the moving image into the fixed image space.
-  //  This is easily done with the \doxygen{ResampleImageFilter}. Please
-  //  refer to Section~\ref{sec:ResampleImageFilter} for details on the use
+  //  This is easily done with the ResampleImageFilter. Please
+  //  refer to ResampleImageFilter for details on the use
   //  of this filter.  First, a ResampleImageFilter type is instantiated
   //  using the image types. It is convenient to use the fixed image type as
   //  the output type since it is likely that the transformed moving image
@@ -365,13 +364,11 @@ int main( int argc, char *argv[] )
   resampler->SetInput( movingImageReader->GetOutput() );
 
 
-
-
   //  The Transform that is produced as output of the Registration method is
   //  also passed as input to the resampling filter. Note the use of the
-  //  methods \code{GetOutput()} and \code{Get()}. This combination is needed
+  //  methods GetOutput() and Get(). This combination is needed
   //  here because the registration method acts as a filter whose output is a
-  //  transform decorated in the form of a \doxygen{DataObject}. For details in
+  //  transform decorated in the form of a DataObject. For details in
   //  this construction you may want to read the documentation of the
   //  DataObjectDecorator.
 
@@ -397,11 +394,9 @@ int main( int argc, char *argv[] )
 
 
   //  The output of the filter is passed to a writer that will store the
-  //  image in a file. An \doxygen{CastImageFilter} is used to convert the
+  //  image in a file. An CastImageFilter is used to convert the
   //  pixel type of the resampled image to the final type used by the
   //  writer. The cast and writer filters are instantiated below.
-
-
   typedef unsigned char OutputPixelType;
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
   typedef itk::CastImageFilter<
@@ -409,15 +404,8 @@ int main( int argc, char *argv[] )
                         OutputImageType > CastFilterType;
   typedef itk::ImageFileWriter< OutputImageType >  WriterType;
 
-  //
-  //  The filters are created by invoking their \code{New()}
-  //  method.
-
-
   WriterType::Pointer      writer =  WriterType::New();
   CastFilterType::Pointer  caster =  CastFilterType::New();
-
-
   writer->SetFileName( argv[3] );
 
 
@@ -430,7 +418,7 @@ int main( int argc, char *argv[] )
 
 
   //  The fixed image and the transformed moving image can easily be compared
-  //  using the \doxygen{SubtractImageFilter}. This pixel-wise filter computes
+  //  using the SubtractImageFilter. This pixel-wise filter computes
   //  the difference between homologous pixels of its two input images.
 
 
@@ -449,15 +437,15 @@ int main( int argc, char *argv[] )
 
   //  Note that the use of subtraction as a method for comparing the images is
   //  appropriate here because we chose to represent the images using a pixel
-  //  type \code{float}. A different filter would have been used if the pixel
-  //  type of the images were any of the \code{unsigned} integer type.
+  //  type float. A different filter would have been used if the pixel
+  //  type of the images were any of the unsigned integer type.
 
 
 
 
   //  Since the differences between the two images may correspond to very low
   //  values of intensity, we rescale those intensities with a
-  //  \doxygen{RescaleIntensityImageFilter} in order to make them more visible.
+  //  RescaleIntensityImageFilter in order to make them more visible.
   //  This rescaling will also make possible to visualize the negative values
   //  even if we save the difference image in a file format that only support
   //  unsigned pixel values\footnote{This is the case of PNG, BMP, JPEG and
