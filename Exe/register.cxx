@@ -34,8 +34,11 @@
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkSubtractImageFilter.h"
 
+// I do a mean filtering, before shrinking, to lose less information
 #include "itkMeanImageFilter.h"
 #include "itkShrinkImageFilter.h"
+// fabs may not have been used in other classes
+#include "math.h"
 
 class CommandIterationUpdate : public itk::Command
 {
@@ -230,6 +233,8 @@ int main( int argc, char *argv[] )
                     fixedShrink->GetOutput()->GetBufferedRegion() );
 
 
+
+
   //  The parameters of the transform are initialized by passing them in an
   //  array. This can be used to setup an initial known correction of the
   //  misalignment. In this particular case, a translation transform is
@@ -242,13 +247,11 @@ int main( int argc, char *argv[] )
   typedef RegistrationType::ParametersType ParametersType;
   ParametersType initialParameters( transform->GetNumberOfParameters() );
 
-
-
   // Initial offset in mm along X
-  float previousXtranslation = (float)atof(argv[4]);
+  float previousXtranslation = (float)atof(argv[5]);
   initialParameters[5] = previousXtranslation;
   // Initial offset in mm along Y
-  float previousYtranslation = (float)atof(argv[4]);
+  float previousYtranslation = (float)atof(argv[6]);
   initialParameters[6] = previousYtranslation;
 
   registration->SetInitialTransformParameters( initialParameters );
@@ -347,7 +350,25 @@ int main( int argc, char *argv[] )
   std::cout << " Iterations    = " << numberOfIterations << std::endl;
   std::cout << " Metric value  = " << bestValue          << std::endl;
 
+  float maxXtranslation = (float)atof(argv[3]);
+  float maxYtranslation = (float)atof(argv[4]);
 
+
+  // if the translation is within the accepted range :
+  if (  ( fabs(TranslationAlongX) < maxXtranslation )
+     && ( fabs(TranslationAlongY) < maxYtranslation ) )
+    {
+    // we use the format accepted by the visual basic macro
+    std::cout << "success: ";
+    std::cout << "Xshift = "<< TranslationAlongX <<"; ";
+    std::cout << "Yshift = "<< TranslationAlongY <<"; ";
+    std::cout << std::endl;
+    }
+  else
+    {
+    std::cerr << "registration failure : translation larger than limits"
+      << std::endl;
+    }
 
 
   //  It is common, as the last step of a registration task, to use the
@@ -413,15 +434,18 @@ int main( int argc, char *argv[] )
 
   WriterType::Pointer      writer =  WriterType::New();
   CastFilterType::Pointer  caster =  CastFilterType::New();
-  writer->SetFileName( argv[3] );
+
 
 
   //  The filters are connected together and the \code{Update()} method of the
   //  writer is invoked in order to trigger the execution of the pipeline.
   caster->SetInput( resampler->GetOutput() );
   writer->SetInput( caster->GetOutput()   );
-  writer->Update();
-
+  if( argc > 7 )
+    {
+    writer->SetFileName( argv[7] );
+    writer->Update();
+    }
 
 
   //  The fixed image and the transformed moving image can easily be compared
@@ -479,9 +503,9 @@ int main( int argc, char *argv[] )
   writer2->SetInput( intensityRescaler->GetOutput() );
 
 
-  if( argc > 4 )
+  if( argc > 8 )
     {
-    writer2->SetFileName( argv[4] );
+    writer2->SetFileName( argv[8] );
     writer2->Update();
     }
 
@@ -503,9 +527,9 @@ int main( int argc, char *argv[] )
   resampler->SetTransform( identityTransform );
 
 
-  if( argc > 5 )
+  if( argc > 9 )
     {
-    writer2->SetFileName( argv[5] );
+    writer2->SetFileName( argv[9] );
     writer2->Update();
     }
 
