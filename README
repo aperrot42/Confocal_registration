@@ -1,0 +1,21 @@
+CONFOCAL REGISTRATION PROJECT
+=============================
+
+Gofigure2 Team,
+Megason Lab
+
+This project is aimed at automatically moving the confocal microscope while imaging.
+It uses a registration process between timepoints to determine global displacement of the sample.
+
+This is an experimental project :
+for now: 
++ we use a translation transform in the registration process, which doesn't consider the shape modification of the sample.
++ we only register 2D images in a representative area of the sample.
+
+
+in the future, we may:
++ use a non rigid transform and evaluate displacement in the border of the images.
++ modify the optimizer
++ modify the metric
++ take into account the 3rd dimension
++ use a Kalman filter to predict displacements
