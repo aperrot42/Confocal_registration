@@ -1,5 +1,4 @@
 h1. CONFOCAL REGISTRATION PROJECT
-=============================
 
 Gofigure2 Team,
 Megason Lab
