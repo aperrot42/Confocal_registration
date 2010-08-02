@@ -79,14 +79,15 @@ public:
 
 int main( int argc, char *argv[] )
 {
-  if( argc < 4 )
+  if( argc < 7 )
     {
     std::cerr << "Missing Parameters " << std::endl;
     std::cerr << "Usage: " << argv[0];
     std::cerr << " fixedImageFile  movingImageFile ";
-
-    std::cerr << "outputImagefile [differenceImageAfter]";
-    std::cerr << "[differenceImageBefore]" << std::endl;
+    std::cerr << " max_xtranslation max_ytranslation ";
+    std::cerr << " previous_xtranslation previous_ytranslation ";
+    std::cerr << " [outputImagefile] [differenceImageAfter]";
+    std::cerr << " [differenceImageBefore]" << std::endl;
 
     //std::cerr << " xMaxTranslation yMaxTranslation zMaxTranslation ";
 
@@ -241,8 +242,14 @@ int main( int argc, char *argv[] )
   typedef RegistrationType::ParametersType ParametersType;
   ParametersType initialParameters( transform->GetNumberOfParameters() );
 
-  initialParameters[0] = 0.0;  // Initial offset in mm along X
-  initialParameters[1] = 0.0;  // Initial offset in mm along Y
+
+
+  // Initial offset in mm along X
+  float previousXtranslation = (float)atof(argv[4]);
+  initialParameters[5] = previousXtranslation;
+  // Initial offset in mm along Y
+  float previousYtranslation = (float)atof(argv[4]);
+  initialParameters[6] = previousYtranslation;
 
   registration->SetInitialTransformParameters( initialParameters );
 
